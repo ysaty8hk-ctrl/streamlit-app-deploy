@@ -1,45 +1,51 @@
 import streamlit as st
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
 
-st.title("サンプルアプリ②: 少し複雑なWebアプリ")
+# 環境変数の読み込み
+load_dotenv()
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-st.write("##### 動作モード1: 文字数カウント")
-st.write("入力フォームにテキストを入力し、「実行」ボタンを押すことで文字数をカウントできます。")
-st.write("##### 動作モード2: BMI値の計算")
-st.write("身長と体重を入力することで、肥満度を表す体型指数のBMI値を算出できます。")
+# アドバイザーの役割オプション
+advisor_options = {
+    "まくら販売アドバイザー": "あなたは快眠をサポートするまくら販売アドバイザーです。まくらの選び方や寝具の工夫を中心に、安全で快適なアドバイスを提供してください。",
+    "医師": "あなたは医師です。睡眠に関する医学的な観点から、安全で信頼できるアドバイスを提供してください。"
+}
 
-selected_item = st.radio(
-    "動作モードを選択してください。",
-    ["文字数カウント", "BMI値の計算"]
-)
+# Streamlit UI
+st.title("睡眠アドバイザー")
+st.write("睡眠に関する質問にお答えします。")
 
-st.divider()
+# ラジオボタンで役割選択
+selected_role = st.radio("アドバイザーの役割を選んでください", list(advisor_options.keys()))
 
-if selected_item == "文字数カウント":
-    input_message = st.text_input(label="文字数のカウント対象となるテキストを入力してください。")
-    text_count = len(input_message)
+# ユーザーの質問入力
+user_question = st.text_area("あなたの質問を入力してください：", height=100)
 
-else:
-    height = st.text_input(label="身長（cm）を入力してください。")
-    weight = st.text_input(label="体重（kg）を入力してください。")
-
+# 実行ボタン
 if st.button("実行"):
-    st.divider()
-
-    if selected_item == "文字数カウント":
-        if input_message:
-            st.write(f"文字数: **{text_count}**")
-
-        else:
-            st.error("カウント対象となるテキストを入力してから「実行」ボタンを押してください。")
-
+    if user_question.strip():
+        # system メッセージを選択
+        system_message = advisor_options[selected_role]
+        
+        try:
+            # OpenAI API 呼び出し
+            with st.spinner("回答を生成中..."):
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": user_question}
+                    ],
+                    temperature=0.5
+                )
+            
+            # 結果表示
+            st.subheader(f"【{selected_role}の回答】")
+            st.write(response.choices[0].message.content)
+            
+        except Exception as e:
+            st.error(f"エラーが発生しました: {str(e)}")
     else:
-        if height and weight:
-            try:
-                bmi = round(int(weight) / ((int(height)/100) ** 2), 1)
-                st.write(f"BMI値: {bmi}")
-
-            except ValueError as e:
-                st.error("身長と体重は数値で入力してください。")
-
-        else:
-            st.error("身長と体重をどちらも入力してください。")
+        st.warning("質問を入力してください。")
