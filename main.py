@@ -21,6 +21,9 @@ import components as cn
 import constants as ct
 
 
+from dotenv import load_dotenv
+import os
+
 ############################################################
 # 2. 設定関連
 ############################################################
