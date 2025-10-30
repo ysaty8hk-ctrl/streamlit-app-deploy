@@ -21,15 +21,6 @@ import components as cn
 import constants as ct
 
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.error("APIキーが設定されていません。")
-    st.stop()
-
-client = OpenAI(api_key=api_key)
-
-
 ############################################################
 # 2. 設定関連
 ############################################################
