@@ -62,6 +62,9 @@ cn.display_app_title()
 # モード表示
 cn.display_select_mode()
 
+# サイドバー情報表示
+cn.display_sidebar_info()
+
 # AIメッセージの初期表示
 cn.display_initial_ai_message()
 
